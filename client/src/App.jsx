@@ -1,11 +1,8 @@
-import { useState } from "react";
 import RoomJoin from "./components/RoomJoin";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import GameBoard from "./components/GameBoard";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <BrowserRouter>
       <Routes>
