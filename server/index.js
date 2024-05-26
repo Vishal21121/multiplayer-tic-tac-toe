@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { Actions } from "../client/src/utils/Actions.js";
+import { Actions } from "./utils/Actions.js";
 
 const io = new Server();
 
