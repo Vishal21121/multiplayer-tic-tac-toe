@@ -2,7 +2,7 @@ import RoomJoin from "./components/RoomJoin";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import GameBoard from "./components/GameBoard";
 import { Toaster } from "react-hot-toast";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function App() {
   return (
