@@ -17,18 +17,28 @@ const GameBoard = () => {
   const [socketio, setSocketio] = useState(null);
   const { roomId } = useParams();
   const { username } = useUserContext();
+  const [playerWon, setPlayerWon] = useState("");
   const [userWon, setUserWon] = useState(false);
   const navigate = useNavigate();
 
-  const insertSymbol = (id, index, innerIndex) => {
-    let tempArr = JSON.parse(JSON.stringify(boardArr));
-    if (!id) {
+  const insertSymbol = (value, index, innerIndex) => {
+    let tempArr = JSON.parse(JSON.stringify(arr.current));
+    if (!value) {
+      socketio.emit(Actions.MOVE_PLAYED, {
+        value: userSymbol,
+        index,
+        innerIndex,
+        roomId,
+      });
       tempArr[index][innerIndex] = userSymbol;
+      arr.current[index][innerIndex] = userSymbol;
       setBoardArr(tempArr);
       const isWon = haveWon(tempArr);
       console.log("iswon", isWon);
       if (isWon) {
         setUserWon(true);
+        setPlayerWon(username);
+        socketio.emit(Actions.PLAYER_WON, { roomId, username });
       }
     } else {
       console.log("not empty");
@@ -97,9 +107,26 @@ const GameBoard = () => {
       toast.success(`${username} left`);
     });
 
+    socket.on(Actions.MOVE_PLAYED, ({ value, index, innerIndex }) => {
+      console.log("move played", value);
+      let tempArr = JSON.parse(JSON.stringify(arr.current));
+      console.log(tempArr);
+      tempArr[index][innerIndex] = value;
+      setBoardArr(tempArr);
+      arr.current[index][innerIndex] = value;
+    });
+
+    socket.on(Actions.PLAYER_WON, ({ username }) => {
+      setUserWon(true);
+      setPlayerWon(username);
+    });
+
     return () => {
       socket.off(Actions.USER_JOIN);
       socket.off(Actions.USER_JOINED);
+      socket.off(Actions.DISCONNECTED);
+      socket.off(Actions.MOVE_PLAYED);
+      socket.off(Actions.PLAYER_WON);
       socket.disconnect();
     };
   }, []);
@@ -136,7 +163,7 @@ const GameBoard = () => {
       {userWon ? (
         <div className="flex">
           <h1 className="text-4xl bg-green-500 text-white p-4 rounded">
-            You Won
+            {`${playerWon} won`}
           </h1>
           <ConfettiExplosion
             force={0.8}

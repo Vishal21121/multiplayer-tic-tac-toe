@@ -13,8 +13,20 @@ io.on("connection", (socket) => {
     roomUserCount[roomId] = roomUserCount[roomId] + 1;
     userSocketMap[socket.id] = username;
     socket.join(roomId);
-    socket.to(roomId).emit(Actions.USER_JOINED, { username });
+    io.to(roomId).except(socket.id).emit(Actions.USER_JOINED, { username });
   });
+
+  socket.on(Actions.MOVE_PLAYED, ({ value, index, innerIndex, roomId }) => {
+    console.log("moved played", value, index, innerIndex, roomId);
+    io.to(roomId)
+      .except(socket.id)
+      .emit(Actions.MOVE_PLAYED, { value, index, innerIndex });
+  });
+
+  socket.on(Actions.PLAYER_WON, ({ roomId, username }) => {
+    io.to(roomId).except(socket.id).emit(Actions.PLAYER_WON, { username });
+  });
+
   socket.on("disconnecting", () => {
     const rooms = [...socket.rooms];
     rooms.forEach((roomId) => {
