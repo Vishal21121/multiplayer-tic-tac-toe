@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "../context/UserContext";
 import ConfettiExplosion from "react-confetti-explosion";
 import { toast } from "react-hot-toast";
+import { GrPowerReset } from "react-icons/gr";
 
 const GameBoard = () => {
   const arr = useRef(new Array(3).fill().map(() => new Array(3).fill("")));
@@ -42,6 +43,7 @@ const GameBoard = () => {
         setUserWon(true);
         setPlayerWon(username);
         socketio.emit(Actions.PLAYER_WON, { roomId, username });
+        document.getElementById("my_modal_1").showModal();
       }
     } else {
       console.log("not empty");
@@ -85,6 +87,16 @@ const GameBoard = () => {
       return true;
     }
     return false;
+  };
+
+  const resetGame = () => {
+    arr.current = new Array(3).fill().map(() => new Array(3).fill(""));
+    setBoardArr(arr.current);
+    setPlayerWon("");
+    setUserSymbol("");
+    setUserWon(false);
+    document.getElementById("my_modal_5").showModal();
+    socketio.emit(Actions.GAME_RESET, { roomId });
   };
 
   useEffect(() => {
@@ -132,6 +144,10 @@ const GameBoard = () => {
       navigate("/");
     });
 
+    socket.on(Actions.GAME_RESET, () => {
+      resetGame();
+    });
+
     return () => {
       socket.off(Actions.USER_JOIN);
       socket.off(Actions.USER_JOINED);
@@ -139,6 +155,7 @@ const GameBoard = () => {
       socket.off(Actions.MOVE_PLAYED);
       socket.off(Actions.PLAYER_WON);
       socket.off(Actions.ROOM_FULL);
+      socket.off(Actions.GAME_RESET);
       socket.disconnect();
     };
   }, []);
@@ -165,6 +182,25 @@ const GameBoard = () => {
             </div>
             <div className="modal-action">
               <form method="dialog" className="border">
+                <button className="btn">Close</button>
+              </form>
+            </div>
+          </div>
+        </dialog>
+      }
+      {
+        <dialog id="my_modal_1" className="modal">
+          <div className="modal-box">
+            <div
+              className="flex gap-1 bg-gray-900 w-fit p-4 rounded-lg items-center cursor-pointer"
+              onClick={() => resetGame()}
+            >
+              <h3 className="font-bold text-lg">Reset!</h3>
+              <GrPowerReset className="text-2xl" />
+            </div>
+            <div className="modal-action">
+              <form method="dialog">
+                {/* if there is a button in form, it will close the modal */}
                 <button className="btn">Close</button>
               </form>
             </div>

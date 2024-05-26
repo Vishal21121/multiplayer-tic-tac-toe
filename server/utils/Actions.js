@@ -5,4 +5,5 @@ export const Actions = {
   MOVE_PLAYED: "MOVE_PLAYED",
   PLAYER_WON: "PLAYER_WON",
   ROOM_FULL: "ROOM_FULL",
+  GAME_RESET: "GAME_RESET",
 };

@@ -31,6 +31,10 @@ io.on("connection", (socket) => {
     io.to(roomId).except(socket.id).emit(Actions.PLAYER_WON, { username });
   });
 
+  socket.on(Actions.GAME_RESET, ({ roomId }) => {
+    io.to(roomId).except(socket.id).emit(Actions.GAME_RESET);
+  });
+
   socket.on("disconnecting", () => {
     const rooms = [...socket.rooms];
     rooms.forEach((roomId) => {
