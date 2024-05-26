@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useUserContext } from "../context/UserContext";
@@ -7,7 +7,11 @@ import toast from "react-hot-toast";
 function RoomJoin() {
   const navigate = useNavigate();
   const [roomName, setRoomName] = useState("");
-  const { setUsername: setName, setCurrentPlayer } = useUserContext();
+  const {
+    setUsername: setName,
+    setCurrentPlayer,
+    setRemoteUser,
+  } = useUserContext();
 
   const joinRoom = () => {
     const uuid = uuidv4();
@@ -26,6 +30,12 @@ function RoomJoin() {
     setName(`user-${shortUuid}`);
     navigate(`/room/${roomId}`);
   };
+
+  useEffect(() => {
+    setName("");
+    setCurrentPlayer("");
+    setRemoteUser("");
+  }, []);
 
   return (
     <div className="min-h-screen bg-base-200 flex justify-center items-center">
