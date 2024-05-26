@@ -4,4 +4,5 @@ export const Actions = {
   DISCONNECTED: "disconnected",
   MOVE_PLAYED: "MOVE_PLAYED",
   PLAYER_WON: "PLAYER_WON",
+  ROOM_FULL: "ROOM_FULL",
 };

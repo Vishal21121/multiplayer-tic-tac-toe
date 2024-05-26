@@ -7,17 +7,21 @@ const roomUserCount = {};
 const userSocketMap = {};
 
 io.on("connection", (socket) => {
-  console.log("connected", socket.id);
   socket.on(Actions.USER_JOIN, ({ roomId, username }) => {
-    console.log(`user joined  ${roomId}`);
-    roomUserCount[roomId] = roomUserCount[roomId] + 1;
-    userSocketMap[socket.id] = username;
-    socket.join(roomId);
-    io.to(roomId).except(socket.id).emit(Actions.USER_JOINED, { username });
+    let userCount = roomUserCount[roomId] || 1;
+    if (userCount < 2) {
+      userSocketMap[socket.id] = username;
+      roomUserCount[roomId] = roomUserCount[roomId]
+        ? roomUserCount[roomId] + 1
+        : 1;
+      socket.join(roomId);
+      io.to(roomId).except(socket.id).emit(Actions.USER_JOINED, { username });
+    } else {
+      io.to(socket.id).emit(Actions.ROOM_FULL);
+    }
   });
 
   socket.on(Actions.MOVE_PLAYED, ({ value, index, innerIndex, roomId }) => {
-    console.log("moved played", value, index, innerIndex, roomId);
     io.to(roomId)
       .except(socket.id)
       .emit(Actions.MOVE_PLAYED, { value, index, innerIndex });
@@ -35,6 +39,7 @@ io.on("connection", (socket) => {
         username: userSocketMap[socket.id],
       });
     });
+    delete userSocketMap[socket.id];
     socket.leave();
   });
 });

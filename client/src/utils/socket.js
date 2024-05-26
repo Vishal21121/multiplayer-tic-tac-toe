@@ -7,5 +7,5 @@ export const initSocket = () => {
     timeout: 10000,
     transports: ["websocket"],
   };
-  return io("http://localhost:3000", options);
+  return io(import.meta.env.VITE_SERVER, options);
 };

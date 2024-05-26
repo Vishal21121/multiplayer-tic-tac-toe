@@ -8,7 +8,7 @@ import { Actions } from "../utils/Actions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "../context/UserContext";
 import ConfettiExplosion from "react-confetti-explosion";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 const GameBoard = () => {
   const arr = useRef(new Array(3).fill().map(() => new Array(3).fill("")));
@@ -114,11 +114,17 @@ const GameBoard = () => {
       tempArr[index][innerIndex] = value;
       setBoardArr(tempArr);
       arr.current[index][innerIndex] = value;
+      toast.success("It's your chance");
     });
 
     socket.on(Actions.PLAYER_WON, ({ username }) => {
       setUserWon(true);
       setPlayerWon(username);
+    });
+
+    socket.on(Actions.ROOM_FULL, () => {
+      toast.error("Room is full");
+      navigate("/");
     });
 
     return () => {
@@ -127,13 +133,13 @@ const GameBoard = () => {
       socket.off(Actions.DISCONNECTED);
       socket.off(Actions.MOVE_PLAYED);
       socket.off(Actions.PLAYER_WON);
+      socket.off(Actions.ROOM_FULL);
       socket.disconnect();
     };
   }, []);
 
   return (
     <div className="w-full h-screen flex justify-center items-center">
-      <Toaster position="top-right" reverseOrder={false} />
       {
         <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
           <div className="modal-box">
