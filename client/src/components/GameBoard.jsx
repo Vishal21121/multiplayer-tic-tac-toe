@@ -16,7 +16,8 @@ const GameBoard = () => {
   const [userSymbol, setUserSymbol] = useState("");
   const [socketio, setSocketio] = useState(null);
   const { roomId } = useParams();
-  const { username } = useUserContext();
+  const { username, setCurrentPlayer, remoteUser, setRemoteUser } =
+    useUserContext();
   const [playerWon, setPlayerWon] = useState("");
   const [userWon, setUserWon] = useState(false);
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ const GameBoard = () => {
         innerIndex,
         roomId,
       });
+      console.log(remoteUser);
+      setCurrentPlayer(remoteUser);
       tempArr[index][innerIndex] = userSymbol;
       arr.current[index][innerIndex] = userSymbol;
       setBoardArr(tempArr);
@@ -85,7 +88,7 @@ const GameBoard = () => {
   };
 
   useEffect(() => {
-    console.log({ username });
+    console.log({ username, remoteUser });
     document.getElementById("my_modal_5").showModal();
     const socket = initSocket();
     setSocketio(socket);
@@ -102,6 +105,7 @@ const GameBoard = () => {
     socket.on(Actions.USER_JOINED, ({ username }) => {
       console.log("username", username);
       toast.success(`${username} joined`);
+      setRemoteUser(username);
     });
     socket.on(Actions.DISCONNECTED, ({ username }) => {
       toast.success(`${username} left`);
@@ -114,6 +118,7 @@ const GameBoard = () => {
       tempArr[index][innerIndex] = value;
       setBoardArr(tempArr);
       arr.current[index][innerIndex] = value;
+      setCurrentPlayer(username);
       toast.success("It's your chance");
     });
 
@@ -169,7 +174,7 @@ const GameBoard = () => {
       {userWon ? (
         <div className="flex">
           <h1 className="text-4xl bg-green-500 text-white p-4 rounded">
-            {`${playerWon} won`}
+            {playerWon === username ? "You won" : `${playerWon} won`}
           </h1>
           <ConfettiExplosion
             force={0.8}

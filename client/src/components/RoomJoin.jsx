@@ -2,22 +2,27 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useUserContext } from "../context/UserContext";
+import toast from "react-hot-toast";
 
 function RoomJoin() {
   const navigate = useNavigate();
   const [roomName, setRoomName] = useState("");
-  const [username, setUsername] = useState("");
-  const { setUsername: setName } = useUserContext();
+  const { setUsername: setName, setCurrentPlayer } = useUserContext();
 
   const joinRoom = () => {
-    setName(username);
+    const uuid = uuidv4();
+    const shortUuid = uuid.replace(/-/g, "").substring(0, 4);
+    setName(`user-${shortUuid}`);
     navigate(`/room/${roomName}`);
   };
 
-  const createRoom = () => {
+  const createRoom = async () => {
     const roomId = uuidv4();
     const uuid = uuidv4();
     const shortUuid = uuid.replace(/-/g, "").substring(0, 4);
+    await navigator.clipboard.writeText(roomId);
+    toast.success("Room id copied");
+    setCurrentPlayer(`user-${shortUuid}`);
     setName(`user-${shortUuid}`);
     navigate(`/room/${roomId}`);
   };
@@ -27,14 +32,6 @@ function RoomJoin() {
       <div className="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
         <form className="card-body">
           <div className="form-control flex flex-col gap-4">
-            <input
-              type="text"
-              placeholder="Enter username"
-              className="input input-bordered"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
             <input
               type="text"
               placeholder="Enter room id"
