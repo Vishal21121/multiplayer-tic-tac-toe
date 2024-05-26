@@ -38,8 +38,11 @@ const GameBoard = () => {
       arr.current[index][innerIndex] = userSymbol;
       setBoardArr(tempArr);
       const isWon = haveWon(tempArr);
-      console.log("iswon", isWon);
-      if (isWon) {
+      const isEmpty = arr.current.some((el) => el.some((el) => el === ""));
+      if (!isWon && !isEmpty) {
+        console.log("went inside");
+        document.getElementById("my_modal_1").showModal();
+      } else if (isWon) {
         setUserWon(true);
         setPlayerWon(username);
         socketio.emit(Actions.PLAYER_WON, { roomId, username });
