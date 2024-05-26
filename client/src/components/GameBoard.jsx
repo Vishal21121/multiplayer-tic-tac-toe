@@ -5,18 +5,20 @@ import { GiCrossMark } from "react-icons/gi";
 import { FaRegCircle } from "react-icons/fa6";
 import { initSocket } from "../utils/socket";
 import { Actions } from "../utils/Actions";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "../context/UserContext";
 import ConfettiExplosion from "react-confetti-explosion";
+import { Toaster, toast } from "react-hot-toast";
 
 const GameBoard = () => {
   const arr = useRef(new Array(3).fill().map(() => new Array(3).fill("")));
   const [boardArr, setBoardArr] = useState(arr.current);
   const [userSymbol, setUserSymbol] = useState("");
-  const [socketio, setSocketio] = useState("");
+  const [socketio, setSocketio] = useState(null);
   const { roomId } = useParams();
   const { username } = useUserContext();
   const [userWon, setUserWon] = useState(false);
+  const navigate = useNavigate();
 
   const insertSymbol = (id, index, innerIndex) => {
     let tempArr = JSON.parse(JSON.stringify(boardArr));
@@ -77,16 +79,34 @@ const GameBoard = () => {
     document.getElementById("my_modal_5").showModal();
     const socket = initSocket();
     setSocketio(socket);
+    socket.on("connect_error", (err) => handleErrors(err));
+    socket.on("connect_failed", (err) => handleErrors(err));
 
-    socket.emit(Actions.USER_JOIN, { roomId: roomId });
+    function handleErrors(e) {
+      console.log("socket error", e);
+      toast.error("Socket connection failed, try again later.");
+      navigate("/");
+    }
+
+    socket.emit(Actions.USER_JOIN, { roomId: roomId, username });
+    socket.on(Actions.USER_JOINED, ({ username }) => {
+      console.log("username", username);
+      toast.success(`${username} joined`);
+    });
+    socket.on(Actions.DISCONNECTED, ({ username }) => {
+      toast.success(`${username} left`);
+    });
 
     return () => {
+      socket.off(Actions.USER_JOIN);
+      socket.off(Actions.USER_JOINED);
       socket.disconnect();
     };
   }, []);
 
   return (
     <div className="w-full h-screen flex justify-center items-center">
+      <Toaster position="top-right" reverseOrder={false} />
       {
         <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
           <div className="modal-box">
