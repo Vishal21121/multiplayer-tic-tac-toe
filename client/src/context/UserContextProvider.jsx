@@ -5,6 +5,8 @@ function UserContextProvider({ children }) {
   const [username, setUsername] = useState("");
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [remoteUser, setRemoteUser] = useState("");
+  const [localMark, setLocalMark] = useState("");
+  const [remoteMark, setRemoteMark] = useState("");
 
   return (
     <UserContext.Provider
@@ -15,6 +17,10 @@ function UserContextProvider({ children }) {
         setCurrentPlayer,
         remoteUser,
         setRemoteUser,
+        localMark,
+        setLocalMark,
+        remoteMark,
+        setRemoteMark,
       }}
     >
       {children}

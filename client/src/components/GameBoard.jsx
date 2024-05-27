@@ -1,41 +1,45 @@
 import React, { useState, useRef, useEffect } from "react";
 import Square from "./Square";
 import { v4 as uuidv4 } from "uuid";
-import { GiCrossMark } from "react-icons/gi";
-import { FaRegCircle } from "react-icons/fa6";
-import { initSocket } from "../utils/socket";
+import { ImCross } from "react-icons/im";
+import { FaDotCircle } from "react-icons/fa";
 import { Actions } from "../utils/Actions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "../context/UserContext";
 import ConfettiExplosion from "react-confetti-explosion";
 import { toast } from "react-hot-toast";
 import { GrPowerReset } from "react-icons/gr";
+import { useSocketContext } from "../context/SocketContext";
 
 const GameBoard = () => {
   const arr = useRef(new Array(3).fill().map(() => new Array(3).fill("")));
   const [boardArr, setBoardArr] = useState(arr.current);
-  const [userSymbol, setUserSymbol] = useState("");
-  const [socketio, setSocketio] = useState(null);
   const { roomId } = useParams();
-  const { username, setCurrentPlayer, remoteUser, setRemoteUser } =
-    useUserContext();
+  const {
+    username,
+    setCurrentPlayer,
+    remoteUser,
+    localMark,
+    setLocalMark,
+    remoteMark,
+  } = useUserContext();
   const [playerWon, setPlayerWon] = useState("");
   const [userWon, setUserWon] = useState(false);
   const navigate = useNavigate();
+  const { socketio: socket } = useSocketContext();
 
   const insertSymbol = (value, index, innerIndex) => {
     let tempArr = JSON.parse(JSON.stringify(arr.current));
     if (!value) {
-      socketio.emit(Actions.MOVE_PLAYED, {
-        value: userSymbol,
+      socket.emit(Actions.MOVE_PLAYED, {
+        value: localMark,
         index,
         innerIndex,
         roomId,
       });
-      console.log(remoteUser);
       setCurrentPlayer(remoteUser);
-      tempArr[index][innerIndex] = userSymbol;
-      arr.current[index][innerIndex] = userSymbol;
+      tempArr[index][innerIndex] = localMark;
+      arr.current[index][innerIndex] = localMark;
       setBoardArr(tempArr);
       const isWon = haveWon(tempArr);
       const isEmpty = arr.current.some((el) => el.some((el) => el === ""));
@@ -45,7 +49,7 @@ const GameBoard = () => {
       } else if (isWon) {
         setUserWon(true);
         setPlayerWon(username);
-        socketio.emit(Actions.PLAYER_WON, { roomId, username });
+        socket.emit(Actions.PLAYER_WON, { roomId, username });
         document.getElementById("my_modal_1").showModal();
       }
     } else {
@@ -57,9 +61,9 @@ const GameBoard = () => {
     // check the rows
     for (let index = 0; index < boardArr.length; index++) {
       if (
-        boardArr[index][0] === userSymbol &&
-        boardArr[index][1] === userSymbol &&
-        boardArr[index][2] === userSymbol
+        boardArr[index][0] === localMark &&
+        boardArr[index][1] === localMark &&
+        boardArr[index][2] === localMark
       ) {
         return true;
       }
@@ -67,25 +71,25 @@ const GameBoard = () => {
     // check for cols
     for (let index = 0; index < boardArr[0].length; index++) {
       if (
-        boardArr[0][index] === userSymbol &&
-        boardArr[1][index] === userSymbol &&
-        boardArr[2][index] === userSymbol
+        boardArr[0][index] === localMark &&
+        boardArr[1][index] === localMark &&
+        boardArr[2][index] === localMark
       ) {
         return true;
       }
     }
     //   for diagnols
     if (
-      boardArr[0][0] === userSymbol &&
-      boardArr[1][1] === userSymbol &&
-      boardArr[2][2] === userSymbol
+      boardArr[0][0] === localMark &&
+      boardArr[1][1] === localMark &&
+      boardArr[2][2] === localMark
     ) {
       return true;
     }
     if (
-      boardArr[2][0] === userSymbol &&
-      boardArr[1][1] === userSymbol &&
-      boardArr[0][2] === userSymbol
+      boardArr[2][0] === localMark &&
+      boardArr[1][1] === localMark &&
+      boardArr[0][2] === localMark
     ) {
       return true;
     }
@@ -96,36 +100,13 @@ const GameBoard = () => {
     arr.current = new Array(3).fill().map(() => new Array(3).fill(""));
     setBoardArr(arr.current);
     setPlayerWon("");
-    setUserSymbol("");
     setUserWon(false);
-    document.getElementById("my_modal_5").showModal();
-    socketio.emit(Actions.GAME_RESET, { roomId });
+    socket.emit(Actions.GAME_RESET, { roomId });
+    document.getElementById("my_modal_1").close();
   };
 
   useEffect(() => {
-    console.log({ username, remoteUser });
-    document.getElementById("my_modal_5").showModal();
-    const socket = initSocket();
-    setSocketio(socket);
-    socket.on("connect_error", (err) => handleErrors(err));
-    socket.on("connect_failed", (err) => handleErrors(err));
-
-    function handleErrors(e) {
-      console.log("socket error", e);
-      toast.error("Socket connection failed, try again later.");
-      navigate("/");
-    }
-
-    socket.emit(Actions.USER_JOIN, { roomId: roomId, username });
-    socket.on(Actions.USER_JOINED, ({ username }) => {
-      console.log("username", username);
-      toast.success(`${username} joined`);
-      setRemoteUser(username);
-    });
-    socket.on(Actions.DISCONNECTED, ({ username }) => {
-      toast.success(`${username} left`);
-    });
-
+    console.log({ username, remoteUser, localMark, remoteMark });
     socket.on(Actions.MOVE_PLAYED, ({ value, index, innerIndex }) => {
       console.log("move played", value);
       let tempArr = JSON.parse(JSON.stringify(arr.current));
@@ -148,39 +129,44 @@ const GameBoard = () => {
     });
 
     socket.on(Actions.GAME_RESET, () => {
-      resetGame();
+      arr.current = new Array(3).fill().map(() => new Array(3).fill(""));
+      setBoardArr(arr.current);
+      setPlayerWon("");
+      setUserWon(false);
     });
 
     return () => {
-      socket.off(Actions.USER_JOIN);
-      socket.off(Actions.USER_JOINED);
-      socket.off(Actions.DISCONNECTED);
       socket.off(Actions.MOVE_PLAYED);
       socket.off(Actions.PLAYER_WON);
       socket.off(Actions.ROOM_FULL);
       socket.off(Actions.GAME_RESET);
-      socket.disconnect();
     };
   }, []);
 
   return (
-    <div className="w-full h-screen flex justify-center items-center">
+    <div className="w-full h-screen flex flex-col justify-center items-center">
       {
         <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
           <div className="modal-box">
             <h3 className="font-bold text-lg">Choose One Symbol!</h3>
             <div className="flex gap-2 mt-4">
               <div
-                className="bg-neutral hover:bg-base-300 cursor-pointer flex items-center p-6"
-                onClick={() => setUserSymbol("X")}
+                className={`${
+                  localMark === "X" ? "bg-base-300" : "bg-neutral"
+                } hover:bg-base-300 cursor-pointer flex items-center p-6`}
+                onClick={(e) => {
+                  setLocalMark("X");
+                }}
               >
-                <GiCrossMark className="text-2xl" />
+                <ImCross className="text-2xl text-white" />
               </div>
               <div
-                className="bg-neutral hover:bg-base-300 cursor-pointer flex items-center p-6"
-                onClick={() => setUserSymbol("O")}
+                className={`${
+                  localMark === "O" ? "bg-base-300" : "bg-neutral"
+                } hover:bg-base-300 cursor-pointer flex items-center p-6`}
+                onClick={() => setLocalMark("O")}
               >
-                <FaRegCircle className="text-2xl" />
+                <FaDotCircle className="text-2xl text-white" />
               </div>
             </div>
             <div className="modal-action">
@@ -241,6 +227,40 @@ const GameBoard = () => {
               })}
             </div>
           ))}
+        </div>
+      )}
+      {userWon ? (
+        ""
+      ) : (
+        <div className="flex gap-2 mt-4 items-center">
+          <div className="flex flex-col items-center">
+            <p className="text-lg">You</p>
+            <div
+              className={`${
+                localMark === "X" ? "bg-base-300" : "bg-neutral"
+              } cursor-pointer flex items-center p-6`}
+            >
+              {localMark === "X" ? (
+                <ImCross className="text-2xl text-white" />
+              ) : (
+                <FaDotCircle className="text-2xl text-white" />
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col items-center">
+            <p className="text-lg">Opponent</p>
+            <div
+              className={`${
+                localMark === "O" ? "bg-base-300" : "bg-neutral"
+              } hover:bg-base-300 cursor-pointer flex items-center p-6`}
+            >
+              {remoteMark === "X" ? (
+                <ImCross className="text-2xl text-white" />
+              ) : (
+                <FaDotCircle className="text-2xl text-white" />
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

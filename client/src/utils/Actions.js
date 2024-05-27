@@ -6,4 +6,5 @@ export const Actions = {
   PLAYER_WON: "PLAYER_WON",
   ROOM_FULL: "ROOM_FULL",
   GAME_RESET: "GAME_RESET",
+  SET_REMOTE: "SET_REMOTE",
 };

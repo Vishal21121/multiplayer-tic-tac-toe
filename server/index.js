@@ -35,6 +35,16 @@ io.on("connection", (socket) => {
     io.to(roomId).except(socket.id).emit(Actions.GAME_RESET);
   });
 
+  socket.on(
+    Actions.SET_REMOTE,
+    ({ localMark, remoteMark, remoteUser, roomId }) => {
+      console.log("got set remote", roomId);
+      io.to(roomId)
+        .except(socket.id)
+        .emit(Actions.SET_REMOTE, { localMark, remoteMark, remoteUser });
+    }
+  );
+
   socket.on("disconnecting", () => {
     const rooms = [...socket.rooms];
     rooms.forEach((roomId) => {
