@@ -17,11 +17,11 @@ function WaitingPage() {
   }, []);
 
   return (
-    <div className="w-2/4 mt-16 ring-8 rounded  ring-blue-500 mx-auto flex flex-col items-center gap-1 h-[80vh]">
-      <h1 className="text-3xl my-4 font-extrabold">
+    <div className="w-[80%] sm:w-2/4 mt-16 ring-8 rounded  ring-blue-500 mx-auto flex flex-col items-center gap-1 h-[80vh]">
+      <h1 className="text-xl sm:text-3xl my-4 font-extrabold">
         {remoteUser ? "Another player joined" : "Waiting for another player"}
       </h1>
-      <div className="flex p-4 items-center h-[60%] justify-between gap-12">
+      <div className="flex flex-col gap-12 sm:h-[60%] sm:flex-row p-4 sm:items-center sm:justify-between sm:gap-12">
         <div className="flex flex-col gap-2 justify-center items-center">
           <p className="text-2xl font-bold">Player - 1</p>
           <img src={avatar_1} className="w-36 h-36" alt="" />
