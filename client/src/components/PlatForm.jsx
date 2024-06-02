@@ -5,15 +5,16 @@ import WaitingPage from "./WaitingPage";
 import { useSocketContext } from "../context/SocketContext";
 import { initSocket } from "../utils/socket";
 import { Actions } from "../utils/Actions";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 function PlatForm() {
-  const { setRemoteUser, username, setLocalMark, setRemoteMark } =
+  const { setRemoteUser, username, setLocalMark, setRemoteMark, isRoomCreate } =
     useUserContext();
   const { setSocketio } = useSocketContext();
   const { roomId } = useParams();
   const [showGameBoard, setShowGameBoard] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log("username", username);
@@ -27,8 +28,7 @@ function PlatForm() {
       toast.error("Socket connection failed, try again later.");
       navigate("/");
     }
-
-    socket.emit(Actions.USER_JOIN, { roomId: roomId, username });
+    socket.emit(Actions.USER_JOIN, { roomId: roomId, username, isRoomCreate });
     socket.on(Actions.USER_JOINED, ({ username: remoteUserName }) => {
       console.log("username", username);
       setRemoteUser(remoteUserName);
@@ -58,6 +58,11 @@ function PlatForm() {
       setLocalMark(remoteMark);
       setRemoteUser(remoteUser);
       setShowGameBoard(true);
+    });
+
+    socket?.on(Actions.JOIN_NOT_ALLOWED, () => {
+      toast.error("room is empty");
+      navigate("/");
     });
 
     return () => {

@@ -11,16 +11,19 @@ function RoomJoin() {
     setUsername: setName,
     setCurrentPlayer,
     setRemoteUser,
+    setIsRoomCreate,
   } = useUserContext();
 
   const joinRoom = () => {
     const uuid = uuidv4();
     const shortUuid = uuid.replace(/-/g, "").substring(0, 4);
     setName(`user-${shortUuid}`);
+    setIsRoomCreate(false);
     navigate(`/room/${roomName}`);
   };
 
   const createRoom = async () => {
+    setIsRoomCreate(true);
     const roomId = uuidv4();
     const uuid = uuidv4();
     const shortUuid = uuid.replace(/-/g, "").substring(0, 4);

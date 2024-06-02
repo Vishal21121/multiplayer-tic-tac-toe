@@ -7,6 +7,7 @@ function UserContextProvider({ children }) {
   const [remoteUser, setRemoteUser] = useState("");
   const [localMark, setLocalMark] = useState("");
   const [remoteMark, setRemoteMark] = useState("");
+  const [isRoomCreate, setIsRoomCreate] = useState(true);
 
   return (
     <UserContext.Provider
@@ -21,6 +22,8 @@ function UserContextProvider({ children }) {
         setLocalMark,
         remoteMark,
         setRemoteMark,
+        isRoomCreate,
+        setIsRoomCreate,
       }}
     >
       {children}

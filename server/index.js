@@ -7,7 +7,14 @@ const roomUserCount = {};
 const userSocketMap = {};
 
 io.on("connection", (socket) => {
-  socket.on(Actions.USER_JOIN, ({ roomId, username }) => {
+  socket.on(Actions.USER_JOIN, ({ roomId, username, isRoomCreate }) => {
+    if (!isRoomCreate) {
+      let userCount = roomUserCount[roomId];
+      if (!userCount) {
+        io.to(socket.id).emit(Actions.JOIN_NOT_ALLOWED);
+        return;
+      }
+    }
     let userCount = roomUserCount[roomId] || 1;
     if (userCount < 2) {
       userSocketMap[socket.id] = username;
@@ -20,7 +27,6 @@ io.on("connection", (socket) => {
       io.to(socket.id).emit(Actions.ROOM_FULL);
     }
   });
-
   socket.on(Actions.MOVE_PLAYED, ({ value, index, innerIndex, roomId }) => {
     io.to(roomId)
       .except(socket.id)
