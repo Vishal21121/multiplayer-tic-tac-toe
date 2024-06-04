@@ -27,6 +27,7 @@ const GameBoard = () => {
   const [userWon, setUserWon] = useState(false);
   const navigate = useNavigate();
   const { socketio: socket } = useSocketContext();
+  const [points, setPoints] = useState(0);
 
   const insertSymbol = (value, index, innerIndex) => {
     let tempArr = JSON.parse(JSON.stringify(arr.current));
@@ -48,6 +49,7 @@ const GameBoard = () => {
         document.getElementById("my_modal_1").showModal();
       } else if (isWon) {
         setUserWon(true);
+        setPoints((pre) => pre + 10);
         setPlayerWon(username);
         socket.emit(Actions.PLAYER_WON, { roomId, username });
         document.getElementById("my_modal_1").showModal();
@@ -145,6 +147,7 @@ const GameBoard = () => {
 
   return (
     <div className="w-full h-screen flex flex-col justify-center items-center">
+      <div className="absolute top-10 right-72">Points: {points}</div>
       {
         <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
           <div className="modal-box">
@@ -211,7 +214,7 @@ const GameBoard = () => {
       ) : (
         <div>
           {boardArr.map((el, index) => (
-            <div className="flex justify-center items-center gap-1">
+            <div className="flex justify-center items-center gap-1" key={index}>
               {el.map((innerEl, innerIndex) => {
                 const val = uuidv4();
                 return (
