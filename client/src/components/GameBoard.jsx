@@ -147,7 +147,9 @@ const GameBoard = () => {
 
   return (
     <div className="w-full h-screen flex flex-col justify-center items-center">
-      <div className="absolute top-10 right-72">Points: {points}</div>
+      <div className="absolute top-10 right-72 p-2 bg-blue-500 text-white rounded-lg">
+        Points: {10}
+      </div>
       {
         <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
           <div className="modal-box">
