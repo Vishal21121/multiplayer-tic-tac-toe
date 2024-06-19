@@ -19,7 +19,7 @@ function RoomJoin() {
     const shortUuid = uuid.replace(/-/g, "").substring(0, 4);
     setName(`user-${shortUuid}`);
     setIsRoomCreate(false);
-    navigate(`/room/${shortUuid}`);
+    navigate(`/room/${roomName}`);
   };
 
   const createRoom = async () => {
